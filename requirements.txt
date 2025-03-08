@@ -4,4 +4,3 @@ numpy
 faiss-cpu
 beautifulsoup4
 mistralai
-time
