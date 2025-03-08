@@ -1,4 +1,5 @@
 import os
+import time
 import streamlit as st
 import requests
 import numpy as np
@@ -8,6 +9,8 @@ from mistralai import Mistral, UserMessage
 
 os.environ["MISTRAL_API_KEY"] = "NXyKdE5JFehmTjXn1RtYyVBOlMzPLGyB"
 api_key = os.getenv("MISTRAL_API_KEY")
+
+client = Mistral(api_key=api_key)
 
 policyLinks = [
     "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/student-conduct-policy",
@@ -41,7 +44,6 @@ def chunk_text(text, chunk_size=512):
     return [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
 
 def get_text_embedding_batched(chunks, batch_size=10):
-    client = Mistral(api_key=api_key)
     embeddings = []
     for i in range(0, len(chunks), batch_size):
         batch = chunks[i:i + batch_size]
@@ -50,14 +52,13 @@ def get_text_embedding_batched(chunks, batch_size=10):
         time.sleep(1)
     return np.array(embeddings)
 
-
-
 def build_index(embeddings):
     d = len(embeddings[0])
     index = faiss.IndexFlatL2(d)
     index.add(embeddings)
     return index
 
+@st.cache_data
 def create_policy_index():
     policy_texts = [fetch_policy(url) for url in policyLinks]
     policy_chunks = [chunk_text(text) for text in policy_texts]
@@ -74,7 +75,7 @@ query = st.text_input("Enter your query:")
 
 if st.button("Get Answer"):
     if query:
-        query_embedding = np.array([get_text_embedding_batched([query])[0]])
+        query_embedding = get_text_embedding_batched([query], batch_size=1)
         D, I = policy_index.search(query_embedding, k=3)
         retrieved_texts = "\n".join([policy_chunks[idx] for idx in I[0]])
         
@@ -88,7 +89,6 @@ if st.button("Get Answer"):
         Answer:
         """
         
-        client = Mistral(api_key=api_key)
         messages = [UserMessage(content=prompt)]
         chat_response = client.chat.complete(model="mistral-small-latest", messages=messages)
         response = chat_response.choices[0].message.content
