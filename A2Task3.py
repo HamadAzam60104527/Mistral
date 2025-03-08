@@ -61,7 +61,7 @@ def create_policy_index():
     policy_chunks = [chunk_text(text) for text in policy_texts]
     flat_chunks = [chunk for sublist in policy_chunks for chunk in sublist]
     
-    embeddings = get_text_embedding(flat_chunks)
+    embeddings = get_text_embedding_batched(flat_chunks)
     index = build_index(embeddings)
     return index, flat_chunks
 
@@ -72,7 +72,7 @@ query = st.text_input("Enter your query:")
 
 if st.button("Get Answer"):
     if query:
-        query_embedding = np.array([get_text_embedding([query])[0]])
+        query_embedding = np.array([get_text_embedding_batched([query])[0]])
         D, I = policy_index.search(query_embedding, k=3)
         retrieved_texts = "\n".join([policy_chunks[idx] for idx in I[0]])
         
