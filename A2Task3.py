@@ -40,7 +40,6 @@ def fetch_policy(url):
 def chunk_text(text, chunk_size=512):
     return [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
 
-@st.cache_data
 def get_text_embedding(list_txt_chunks):
     client = Mistral(api_key=api_key)
     embeddings_batch_response = client.embeddings.create(model="mistral-embed", inputs=list_txt_chunks)
@@ -52,7 +51,6 @@ def build_index(embeddings):
     index.add(embeddings)
     return index
 
-@st.cache_data
 def create_policy_index():
     policy_texts = [fetch_policy(url) for url in policyLinks]
     policy_chunks = [chunk_text(text) for text in policy_texts]
