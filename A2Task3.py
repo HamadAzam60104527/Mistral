@@ -41,6 +41,7 @@ def chunk_text(text, chunk_size=512):
     return [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
 
 def get_text_embedding_batched(chunks, batch_size=10):
+    client = Mistral(api_key=api_key)
     embeddings = []
     for i in range(0, len(chunks), batch_size):
         batch = chunks[i:i + batch_size]
@@ -48,6 +49,7 @@ def get_text_embedding_batched(chunks, batch_size=10):
         embeddings.extend([entry.embedding for entry in embeddings_batch_response.data])
         time.sleep(1)
     return np.array(embeddings)
+
 
 
 def build_index(embeddings):
