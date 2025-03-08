@@ -49,7 +49,7 @@ def get_text_embedding_batched(chunks, batch_size=10):
         batch = chunks[i:i + batch_size]
         embeddings_batch_response = client.embeddings.create(model="mistral-embed", inputs=batch)
         embeddings.extend([entry.embedding for entry in embeddings_batch_response.data])
-        time.sleep(1)
+        time.sleep(5)
     return np.array(embeddings)
 
 def build_index(embeddings):
